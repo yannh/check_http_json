@@ -302,20 +302,21 @@ def sanity_check(options)
         error_msg.push('Must specify target URI or file.')
     end
 
-    if URI.parse(options[:uri]).scheme='https' and not options[:ca_path] then
-        error_msg.push('HTTPS request, but could not find a directory with certificates for trusted CAs. Please specify one with --ca_path.')
+    if (options[:uri] and options[:file]) then
+        error_msg.push('Must specify either target URI or file, but not both.')
     end
 
-    if URI.parse(options[:uri]).scheme='https' and options[:ca_path] and not File.directory?(options[:ca_path]) then
-        error_msg.push('Specified director for ca_path not found')
+    if (options[:uri] and (URI.parse(options[:uri]).scheme='https')) then
+        if not (options[:ca_path]) then
+            error_msg.push('HTTPS detected; must specify a CA path.')
+        end
+        if (options[:ca_path] and not File.directory?(options[:ca_path])) then
+            error_msg.push('CA path is not a directory.')
+        end
     end
 
     if (options[:user] and not options[:pass]) or (options[:pass] and not options[:user]) then
         error_msg.push('Must specify both a username and a password for basic auth.')
-    end
-
-    if (options[:uri] and options[:file]) then
-        error_msg.push('Must specify either target URI or file, but not both.')
     end
 
     if not (options[:element_string] or options[:element_regex]) then
